@@ -1,4 +1,5 @@
 from sources.pubmed.client import PubMedClient
+from sources.pubmed.parser import PubMedParser
 
 from config.logging import logger
 
@@ -8,6 +9,7 @@ class PubMedFetch:
     def __init__(self):
 
         self.client = PubMedClient()
+        self.parser = PubMedParser()
         logger.info("PubMed Fetch Initialized")
     
 
@@ -26,5 +28,13 @@ class PubMedFetch:
             params=params
         )
         
-        return response
+        root = self.parser.parse_xml(response.text)
+        articles = self.parser.extract_articles(root)
+        results = []
+        for article in articles:
+            parsed_article = self.parser.extract_single_article(article)
+            if parsed_article is not None:
+                results.append(parsed_article)
+        
+        return results
 
