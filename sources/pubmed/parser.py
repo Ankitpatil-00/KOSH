@@ -42,6 +42,12 @@ class PubMedParser:
             default=""
         )
     
+    def extract_pmcid(self, article):
+        article_id_list = article.find(".//ArticleIdList")
+        if article_id_list is None:
+            return None
+        for article_id in article_id_list.findall("ArticleId"):
+            article_id.get("IdType")
 
     def extract_single_article(self, article):
 
@@ -93,9 +99,10 @@ class PubMedParser:
                 publication_date = year
         
         abstract = ""
+        parts = []
         abstract_info = article_info.find("Abstract")
         if abstract_info is not None:
-            parts = []
+            
             for section in abstract_info.findall("AbstractText"):
                 label = section.get("Label", "")
                 text = "".join(section.itertext()).strip()
@@ -132,6 +139,7 @@ class PubMedParser:
             "doi": doi,
             "publication_date": publication_date,
             "abstract": abstract,
-            "authors": authors
+            "authors": authors,
+            "pmcid": self.extract_pmcid(article),
         }
 
